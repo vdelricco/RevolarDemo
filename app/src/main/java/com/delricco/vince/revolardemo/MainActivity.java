@@ -1,21 +1,22 @@
 package com.delricco.vince.revolardemo;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.view.View;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final String TAG = this.getClass().getSimpleName();
+    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +47,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // open settings page
                 break;
             case R.id.action_edit_contacts:
-                // open edit contacts fragment
+                int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
+                if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                    startActivity(new Intent(this, EditContactsActivity.class));
+                } else {
+                    askForPermission(Manifest.permission.READ_CONTACTS);
+                }
                 break;
             default:
                 break;
@@ -55,11 +61,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
+    private void askForPermission(String permission) {
+        // Should we show an explanation?
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    PERMISSIONS_REQUEST_READ_CONTACTS);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_READ_CONTACTS: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startActivity(new Intent(this, EditContactsActivity.class));
+                }
+                return;
+            }
+        }
+    }
+
     @Override
     public void onClick(View view) {
         int viewId = view.getId();
 
-        switch(viewId) {
+        switch (viewId) {
             case R.id.safety_button:
                 Log.v(TAG, "Pressed safety button");
                 break;

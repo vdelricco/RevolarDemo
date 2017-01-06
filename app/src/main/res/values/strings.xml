@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">Revolar Demo</string>
+
     <string name="action_settings">Settings</string>
     <string name="action_edit_contacts">Edit Contacts</string>
+
+    <string name="contact_limits">Please Choose 1 to 5 Contacts</string>
+    <string name="save">Save</string>
 </resources>

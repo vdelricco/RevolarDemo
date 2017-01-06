@@ -13,14 +13,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private final String TAG = this.getClass().getSimpleName();
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 1;
+    AppPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        preferences = new AppPreferences(this.getApplicationContext());
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -51,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
                     startActivity(new Intent(this, EditContactsActivity.class));
                 } else {
-                    askForPermission(Manifest.permission.READ_CONTACTS);
+                    askForReadContactsPermission();
                 }
                 break;
             default:
@@ -61,14 +65,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
-    private void askForPermission(String permission) {
-        // Should we show an explanation?
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_CONTACTS},
-                    PERMISSIONS_REQUEST_READ_CONTACTS);
-        }
+    private void askForReadContactsPermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_CONTACTS},
+                PERMISSIONS_REQUEST_READ_CONTACTS);
     }
 
     @Override
@@ -77,8 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (requestCode) {
             case PERMISSIONS_REQUEST_READ_CONTACTS: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startActivity(new Intent(this, EditContactsActivity.class));
                 }
                 return;
@@ -94,6 +93,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.safety_button:
                 Log.v(TAG, "Pressed safety button");
                 break;
+        }
+    }
+
+    public void printSavedContacts() {
+        ArrayList<RevolarContact> contacts = preferences.getContacts();
+        Log.v(TAG, "Contacts size is " + contacts.size());
+        for (int i = 0; i < contacts.size(); i++) {
+            Log.v(TAG, "Contact #" + i);
+            Log.v(TAG, "Name = " + contacts.get(i).getName());
+            Log.v(TAG, "Number = " + contacts.get(i).getNumber());
         }
     }
 }

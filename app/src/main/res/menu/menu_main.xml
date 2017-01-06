@@ -7,4 +7,10 @@
         android:id="@+id/action_edit_contacts"
         android:title="@string/action_edit_contacts"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_view_twitter"
+        android:title="@string/action_edit_contacts"
+        android:icon="@drawable/twitter"
+        app:showAsAction="always" />
 </menu>

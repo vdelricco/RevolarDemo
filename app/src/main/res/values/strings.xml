@@ -2,6 +2,7 @@
     <string name="app_name">Revolar Demo</string>
 
     <string name="action_edit_contacts">Edit Contacts</string>
+    <string name="action_view_twitter">View Revolar Twitter</string>
 
     <string name="contact_limits">Please Choose 1 to 5 Contacts</string>
     <string name="save">Save</string>

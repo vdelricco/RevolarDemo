@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -15,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,7 +28,8 @@ import java.util.Collections;
 import java.util.Comparator;
 
 /**
- * This class uses code from this post: http://stackoverflow.com/questions/18605768/how-to-create-custom-contact-list-with-checkbox
+ * This class uses some code from this post:
+ * http://stackoverflow.com/questions/18605768/how-to-create-custom-contact-list-with-checkbox
  */
 
 public class EditContactsActivity extends Activity implements AdapterView.OnItemClickListener {
@@ -34,7 +39,7 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
     ArrayList<RevolarContact> userContactList = new ArrayList<>();
     ArrayList<RevolarContact> selectedContacts = new ArrayList<>();
     ArrayList<RevolarContact> currentSavedContacts;
-    MyAdapter myAdapter ;
+    UserContactAdapter userContactAdapter ;
     Button saveButton;
     AppPreferences preferences;
 
@@ -48,13 +53,39 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
 
         getAllContacts(this.getContentResolver());
         ListView contactsList = (ListView) findViewById(R.id.contacts_list);
-        myAdapter = new MyAdapter();
-        contactsList.setAdapter(myAdapter);
+        userContactAdapter = new UserContactAdapter();
+        contactsList.setAdapter(userContactAdapter);
         contactsList.setOnItemClickListener(this);
         contactsList.setItemsCanFocus(false);
         contactsList.setTextFilterEnabled(true);
 
         saveButton = (Button) findViewById(R.id.button1);
+        saveButton.setOnTouchListener(new View.OnTouchListener() {
+            /* onTouch code from here: http://stackoverflow.com/a/14483533 */
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        Button view = (Button) v;
+                        //overlay is black with transparency of 0x77 (119)
+                        view.getBackground().setColorFilter(0x77000000, PorterDuff.Mode.SRC_ATOP);
+                        view.invalidate();
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL: {
+                        Button view = (Button) v;
+                        //clear the overlay
+                        view.getBackground().clearColorFilter();
+                        view.invalidate();
+                        break;
+                    }
+                }
+
+                return false;
+            }
+        });
         saveButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -63,7 +94,7 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
 
                 for (int i = 0; i < userContactList.size(); i++)
                 {
-                    if (myAdapter.checkStates.get(i)) {
+                    if (userContactAdapter.checkStates.get(i)) {
                         selectedContacts.add(userContactList.get(i));
                     }
                 }
@@ -75,7 +106,7 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
 
     @Override
     public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-        myAdapter.toggle(arg2);
+        userContactAdapter.toggle(arg2);
     }
 
     public void saveContacts() {
@@ -86,6 +117,7 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
 
         preferences.clearContacts();
         preferences.saveContacts(selectedContacts);
+        Log.v(TAG, "Saved selected contacts");
         finish();
     }
 
@@ -108,24 +140,34 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
         phones.close();
     }
 
-    class MyAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener {
+    class UserContactAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener {
 
         private SparseBooleanArray checkStates;
-        LayoutInflater inflater;
-        TextView contactName, contactPhoneNumber;
-        CheckBox checkbox;
+        private LayoutInflater inflater;
+        private TextView contactName, contactPhoneNumber;
+        private CheckBox checkbox;
 
-        MyAdapter() {
+        UserContactAdapter() {
             checkStates = new SparseBooleanArray(userContactList.size());
             inflater = (LayoutInflater) EditContactsActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            /* Set checkbox states to true for contacts that we have currently saved */
+            /* Rearrange contact list so saved contacts are at the top */
             for (int i = 0; i < userContactList.size(); i++) {
                 String name = userContactList.get(i).getName();
                 String number = userContactList.get(i).getNumber();
                 if (contactAlreadySelected(name, number)) {
-                    checkStates.put(i, true);
+                    RevolarContact contact = userContactList.remove(i);
+                    userContactList.add(0, contact);
                 }
+            }
+
+            /* Set checkbox states to true for contacts that we have currently saved
+             *
+             * Right above this we rearrange the user contact list so we just have to
+             * set the first N checkboxes true where N is number of saved contacts */
+            int numberOfSavedContacts = preferences.getNumContacts();
+            for (int i = 0; i < numberOfSavedContacts; i++) {
+                checkStates.put(i, true);
             }
         }
 
@@ -149,7 +191,7 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
             View view = convertView;
 
             if (convertView == null)
-                view = inflater.inflate(R.layout.row, null);
+                view = inflater.inflate(R.layout.user_contacts_row, null);
 
             String name = userContactList.get(position).getName();
             String number = userContactList.get(position).getNumber();

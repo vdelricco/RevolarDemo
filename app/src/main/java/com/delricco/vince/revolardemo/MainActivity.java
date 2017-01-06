@@ -3,15 +3,20 @@ package com.delricco.vince.revolardemo;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -19,7 +24,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 1;
-    AppPreferences preferences;
+    private static final int PERMISSIONS_REQUEST_SEND_SMS = 2;
+    private AppPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +34,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        (findViewById(R.id.safety_button)).setOnClickListener(this);
+
+        ImageView imageView = (ImageView)findViewById(R.id.revolar_main_logo);
+        /* Let the click listener handle sending SMS messages. Touch listener will
+           handle imageview filter when the revolar image is touched */
+        imageView.setOnClickListener(this);
+        imageView.setOnTouchListener(new View.OnTouchListener() {
+
+            /* onTouch code from here: http://stackoverflow.com/a/14483533 */
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        ImageView view = (ImageView) v;
+                        //overlay is black with transparency of 0x77 (119)
+                        view.getDrawable().setColorFilter(0x77000000, PorterDuff.Mode.SRC_ATOP);
+                        view.invalidate();
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL: {
+                        ImageView view = (ImageView) v;
+                        //clear the overlay
+                        view.getDrawable().clearColorFilter();
+                        view.invalidate();
+                        break;
+                    }
+                }
+
+                return false;
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        printSavedContacts();
     }
 
     @Override
@@ -47,9 +90,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //noinspection SimplifiableIfStatement
         switch(id) {
-            case R.id.action_settings:
-                // open settings page
-                break;
             case R.id.action_edit_contacts:
                 int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
                 if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
@@ -65,20 +105,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
-    private void askForReadContactsPermission() {
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.READ_CONTACTS},
-                PERMISSIONS_REQUEST_READ_CONTACTS);
-    }
-
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case PERMISSIONS_REQUEST_READ_CONTACTS: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startActivity(new Intent(this, EditContactsActivity.class));
+                }
+                return;
+            }
+
+            case PERMISSIONS_REQUEST_SEND_SMS: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    sendSelectedContactsSMS();
                 }
                 return;
             }
@@ -90,9 +131,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int viewId = view.getId();
 
         switch (viewId) {
-            case R.id.safety_button:
-                Log.v(TAG, "Pressed safety button");
+            case R.id.revolar_main_logo:
+                int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS);
+                if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                    sendSelectedContactsSMS();
+                } else {
+                    askForSendSmsPermission();
+                }
                 break;
+        }
+    }
+
+    private void askForReadContactsPermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_CONTACTS},
+                PERMISSIONS_REQUEST_READ_CONTACTS);
+    }
+
+    private void askForSendSmsPermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.SEND_SMS},
+                PERMISSIONS_REQUEST_SEND_SMS);
+    }
+
+    public void sendSelectedContactsSMS() {
+        Log.v(TAG, getString(R.string.sending_sms_messages));
+        SmsManager smsManager = SmsManager.getDefault();
+        ArrayList<RevolarContact> savedContacts = preferences.getContacts();
+
+        for (int i = 0; i < savedContacts.size(); i++) {
+            try {
+                smsManager.sendTextMessage(savedContacts.get(i).getNumber(), null, getString(R.string.alert_sms_message), null, null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

@@ -9,15 +9,15 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 
 public class AppPreferences {
-    public static final String KEY_PREFS_CONTACT = "contact";
-    public static final String KEY_PREFS_CONTACTS_SAVED = "contacts_saved";
+    private static final String KEY_PREFS_CONTACT = "contact";
+    private static final String KEY_PREFS_CONTACTS_SAVED = "contacts_saved";
     private static final String APP_SHARED_PREFS = AppPreferences.class.getSimpleName();
     private SharedPreferences sharedPrefs;
     private SharedPreferences.Editor prefsEditor;
     private Gson gson;
 
     public AppPreferences(Context context) {
-        sharedPrefs = context.getSharedPreferences("AppPreferences", Activity.MODE_PRIVATE);
+        sharedPrefs = context.getSharedPreferences(APP_SHARED_PREFS, Activity.MODE_PRIVATE);
         prefsEditor = sharedPrefs.edit();
         gson = new Gson();
     }
@@ -52,7 +52,7 @@ public class AppPreferences {
         prefsEditor.putInt(KEY_PREFS_CONTACTS_SAVED, numContacts).commit();
     }
 
-    private int getNumContacts() {
+    public int getNumContacts() {
         return sharedPrefs.getInt(KEY_PREFS_CONTACTS_SAVED, 0);
     }
 }

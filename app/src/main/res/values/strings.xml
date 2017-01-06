@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">Revolar Demo</string>
 
-    <string name="action_settings">Settings</string>
     <string name="action_edit_contacts">Edit Contacts</string>
 
     <string name="contact_limits">Please Choose 1 to 5 Contacts</string>
     <string name="save">Save</string>
+    <string name="sending_sms_messages">Sending SMS messages to selected contacts</string>
+
+    <string name="alert_sms_message">You have been contacted by Vince Delricco\'s Revolar demo application.
+    If you weren\'t expecting this message, too bad. You got it.</string>
 </resources>

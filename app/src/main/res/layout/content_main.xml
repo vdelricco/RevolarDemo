@@ -17,22 +17,23 @@
         android:layout_gravity="top"
         android:layout_weight="1"
         android:clickable="false"
-        android:background="@color/colorPrimaryDark">
+        android:background="@color/colorAccent">
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/safety_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_weight="1"
-        android:clickable="true"
+        android:clickable="false"
         android:background="@color/colorAccent">
         <ImageView
+            android:id="@+id/revolar_main_logo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
+            android:clickable="true"
             android:src="@drawable/revolar_logo_square"/>
     </RelativeLayout>
 
@@ -42,6 +43,6 @@
         android:layout_gravity="bottom"
         android:layout_weight="1"
         android:clickable="false"
-        android:background="@color/colorPrimaryDark" />
+        android:background="@color/colorAccent" />
 
 </LinearLayout>

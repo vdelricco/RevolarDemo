@@ -1,8 +1,8 @@
-package com.delricco.vince.revolardemo;
+package com.delricco.vince.revolardemo.twitter;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Tweet {
+class Tweet {
 
     @SerializedName("created_at")
     private String DateCreated;

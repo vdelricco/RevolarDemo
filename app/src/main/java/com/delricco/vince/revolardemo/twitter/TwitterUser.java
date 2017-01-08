@@ -1,9 +1,9 @@
-package com.delricco.vince.revolardemo;
+package com.delricco.vince.revolardemo.twitter;
 
 import com.google.gson.annotations.SerializedName;
 
 
-public class TwitterUser {
+class TwitterUser {
 
     @SerializedName("screen_name")
     private String screenName;

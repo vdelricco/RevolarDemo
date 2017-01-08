@@ -1,11 +1,11 @@
-package com.delricco.vince.revolardemo;
+package com.delricco.vince.revolardemo.contacts;
 
 public class RevolarContact {
 
     private String name;
     private String number;
 
-    public RevolarContact(String name, String number) {
+    RevolarContact(String name, String number) {
         this.name = name;
         this.number = number;
     }

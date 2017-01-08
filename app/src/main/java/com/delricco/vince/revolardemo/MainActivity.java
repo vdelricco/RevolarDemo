@@ -17,6 +17,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.delricco.vince.revolardemo.contacts.EditContactsActivity;
+import com.delricco.vince.revolardemo.contacts.RevolarContact;
+import com.delricco.vince.revolardemo.twitter.TwitterActivity;
+import com.delricco.vince.revolardemo.util.AppPreferences;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -69,19 +76,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        /* Inflate the menu; this adds items to the action bar if it is present. */
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        /* Handle action bar item clicks here. The action bar will
+           automatically handle clicks on the Home/Up button, so long
+           as you specify a parent activity in AndroidManifest.xml */
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         switch(id) {
             case R.id.action_edit_contacts:
                 int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
@@ -102,10 +108,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NotNull String permissions[], @NotNull int[] grantResults) {
         switch (requestCode) {
+            /* If request is cancelled, the result arrays are empty. */
             case PERMISSIONS_REQUEST_READ_CONTACTS: {
-                // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startActivity(new Intent(this, EditContactsActivity.class));
                 }
@@ -113,11 +119,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             case PERMISSIONS_REQUEST_SEND_SMS: {
-                // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     sendSelectedContactsSMS();
                 }
-                return;
             }
         }
     }
@@ -164,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /* Debug method */
     public void printSavedContacts() {
         ArrayList<RevolarContact> contacts = preferences.getContacts();
         Log.v(TAG, "Contacts size is " + contacts.size());

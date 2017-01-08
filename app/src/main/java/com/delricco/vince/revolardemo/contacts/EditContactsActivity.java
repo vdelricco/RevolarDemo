@@ -1,4 +1,4 @@
-package com.delricco.vince.revolardemo;
+package com.delricco.vince.revolardemo.contacts;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -18,10 +18,12 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.delricco.vince.revolardemo.R;
+import com.delricco.vince.revolardemo.util.AppPreferences;
 
 import java.util.ArrayList;
 import java.util.Collections;

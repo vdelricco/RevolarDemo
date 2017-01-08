@@ -1,9 +1,10 @@
-package com.delricco.vince.revolardemo;
+package com.delricco.vince.revolardemo.util;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.delricco.vince.revolardemo.contacts.RevolarContact;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -14,19 +15,17 @@ public class AppPreferences {
     private static final String APP_SHARED_PREFS = AppPreferences.class.getSimpleName();
     private SharedPreferences sharedPrefs;
     private SharedPreferences.Editor prefsEditor;
-    private Gson gson;
 
     public AppPreferences(Context context) {
         sharedPrefs = context.getSharedPreferences(APP_SHARED_PREFS, Activity.MODE_PRIVATE);
         prefsEditor = sharedPrefs.edit();
-        gson = new Gson();
     }
 
     public ArrayList<RevolarContact> getContacts() {
         ArrayList<RevolarContact> contacts = new ArrayList<>();
         for (int i = 0; i < getNumContacts(); i++) {
             String jsonContact = sharedPrefs.getString(KEY_PREFS_CONTACT + i, "");
-            contacts.add(gson.fromJson(jsonContact, RevolarContact.class));
+            contacts.add(new Gson().fromJson(jsonContact, RevolarContact.class));
         }
 
         return contacts;
@@ -34,7 +33,7 @@ public class AppPreferences {
 
     public void saveContacts(ArrayList<RevolarContact> contactList) {
         for (int i = 0; i < contactList.size(); i++) {
-            prefsEditor.putString(KEY_PREFS_CONTACT + i, gson.toJson(contactList.get(i))).commit();
+            prefsEditor.putString(KEY_PREFS_CONTACT + i, new Gson().toJson(contactList.get(i))).commit();
         }
 
         saveNumContacts(contactList.size());

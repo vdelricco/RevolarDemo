@@ -1,4 +1,4 @@
-package com.delricco.vince.revolardemo;
+package com.delricco.vince.revolardemo.twitter;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -16,6 +16,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.delricco.vince.revolardemo.R;
 import com.google.gson.Gson;
 
 import java.io.UnsupportedEncodingException;
@@ -30,25 +31,22 @@ public class TwitterActivity extends ListActivity {
 
     final static String TAG = TwitterActivity.class.getSimpleName();
 
-    private ListActivity activity;
     private ArrayAdapter<Tweet> adapter;
     private Twitter twits;
     private RequestQueue requestQueue;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        activity = this;
 
         requestQueue = Volley.newRequestQueue(this);
         twits = new Twitter();
-        adapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, twits);
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, twits);
         setListAdapter(adapter);
         downloadTweets();
     }
 
-    // download twitter timeline after first checking to see if there is a network connection
+    /* Download twitter timeline after first checking to see if there is a network connection */
     public void downloadTweets() {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -87,19 +85,20 @@ public class TwitterActivity extends ListActivity {
     }
 
     private void getAuthToken() {
-        // Step 1: Encode consumer key and secret
+        /* Step 1: Encode consumer key and secret */
         try {
-            // URL encode the consumer key and secret
+            /* URL encode the consumer key and secret */
             String urlApiKey = URLEncoder.encode(getString(R.string.twitter_consumer_key), "UTF-8");
             String urlApiSecret = URLEncoder.encode(getString(R.string.twitter_consumer_secret), "UTF-8");
 
-            // Concatenate the encoded consumer key, a colon character, and the
-            // encoded consumer secret
+            /* Concatenate the encoded consumer key, a colon character, and the
+               encoded consumer secret */
             final String combined = urlApiKey + ":" + urlApiSecret;
 
-            // Base64 encode the string
+            /* Base64 encode the string */
             final String base64Encoded = Base64.encodeToString(combined.getBytes(), Base64.NO_WRAP);
 
+            /* Request token with the base64 encoded key & secret */
             Request authTokenRequest = new AuthTokenRequest(
                     getString(R.string.twitter_auth_token_url),
                     new AuthResponseListener(),
@@ -124,8 +123,8 @@ public class TwitterActivity extends ListActivity {
         }
 
         @Override
-        public Map getHeaders() throws AuthFailureError {
-            Map headers = new HashMap();
+        public Map<String, String> getHeaders() throws AuthFailureError {
+            Map<String, String> headers = new HashMap<>();
             headers.put("Content-Length", String.valueOf(getBody().length));
             headers.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
             headers.put("Authorization", "Basic " + encodedKeyAndSecret);
@@ -150,8 +149,8 @@ public class TwitterActivity extends ListActivity {
         }
 
         @Override
-        public Map getHeaders() throws AuthFailureError {
-            Map headers = new HashMap();
+        public Map<String, String> getHeaders() throws AuthFailureError {
+            Map<String, String> headers = new HashMap<>();
             headers.put("Authorization", "Bearer " + auth.access_token);
             headers.put("Content-Type", "application/json");
             return headers;
@@ -171,8 +170,8 @@ public class TwitterActivity extends ListActivity {
         @Override
         public void onResponse(String response) {
             final Authenticated auth = jsonToAuthenticated(response);
-            // Applications should verify that the value associated with the
-            // token_type key of the returned object is bearer
+            /* Applications should verify that the value associated with the
+               token_type key of the returned object is bearer */
             if (auth != null && auth.token_type.equals("bearer")) {
                 Request twitterTimelineRequest = new TwitterTimelineRequest(
                         getString(R.string.twitter_timeline_url) + getString(R.string.revolar),
@@ -187,6 +186,6 @@ public class TwitterActivity extends ListActivity {
 
     private class GenericErrorListener implements Response.ErrorListener {
         @Override
-        public void onErrorResponse(VolleyError error) { Log.e("onErrorResponse", error.toString()); }
+        public void onErrorResponse(VolleyError error) { Log.e(TAG, error.toString()); }
     }
 }

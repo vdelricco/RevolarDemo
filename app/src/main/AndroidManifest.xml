@@ -23,8 +23,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".EditContactsActivity"/>
-        <activity android:name=".TwitterActivity"/>
+        <activity android:name=".contacts.EditContactsActivity"/>
+        <activity android:name=".twitter.TwitterActivity"/>
     </application>
 
 </manifest>

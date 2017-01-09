@@ -2,21 +2,31 @@ package com.delricco.vince.revolardemo.twitter;
 
 import android.app.ListActivity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
-import android.widget.ArrayAdapter;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.delricco.vince.revolardemo.R;
+import com.delricco.vince.revolardemo.util.BitmapLruCache;
 import com.google.gson.Gson;
 
 import java.io.UnsupportedEncodingException;
@@ -31,9 +41,10 @@ public class TwitterActivity extends ListActivity {
 
     final static String TAG = TwitterActivity.class.getSimpleName();
 
-    private ArrayAdapter<Tweet> adapter;
     private Twitter twits;
+    private TwitterAdapter adapter;
     private RequestQueue requestQueue;
+    private Authenticated authenticated;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,8 +52,9 @@ public class TwitterActivity extends ListActivity {
 
         requestQueue = Volley.newRequestQueue(this);
         twits = new Twitter();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, twits);
+        adapter = new TwitterAdapter();
         setListAdapter(adapter);
+        authenticated = null;
         downloadTweets();
     }
 
@@ -109,6 +121,23 @@ public class TwitterActivity extends ListActivity {
             ex.printStackTrace();
         }
     }
+    private class TwitterUserRequest extends StringRequest {
+
+        private TwitterUserRequest(String url,
+                                   Response.Listener<String> listener,
+                                   Response.ErrorListener errorListener)
+        {
+            super(Request.Method.GET, url, listener, errorListener);
+        }
+
+        @Override
+        public Map<String, String> getHeaders() throws AuthFailureError {
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Bearer " + authenticated.access_token);
+            headers.put("Content-Type", "application/json");
+            return headers;
+        }
+    }
 
     private class AuthTokenRequest extends StringRequest {
         private String encodedKeyAndSecret;
@@ -173,6 +202,7 @@ public class TwitterActivity extends ListActivity {
             /* Applications should verify that the value associated with the
                token_type key of the returned object is bearer */
             if (auth != null && auth.token_type.equals("bearer")) {
+                authenticated = auth;
                 Request twitterTimelineRequest = new TwitterTimelineRequest(
                         getString(R.string.twitter_timeline_url) + getString(R.string.revolar),
                         new TwitterTimelineResponseListener(),
@@ -187,5 +217,99 @@ public class TwitterActivity extends ListActivity {
     private class GenericErrorListener implements Response.ErrorListener {
         @Override
         public void onErrorResponse(VolleyError error) { Log.e(TAG, error.toString()); }
+    }
+
+    class TwitterAdapter extends BaseAdapter {
+        BitmapLruCache bitmapLruCache;
+
+        private LayoutInflater inflater;
+
+        TwitterAdapter() {
+            inflater = (LayoutInflater) TwitterActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            bitmapLruCache = new BitmapLruCache();
+        }
+
+        @Override
+        public int getCount() {
+            return twits.size();
+        }
+
+        @Override
+        public View getView(final int position, View convertView, ViewGroup parent) {
+            View view = convertView;
+            ImageLoader imageLoader = new ImageLoader(requestQueue, bitmapLruCache);
+
+            if (convertView == null)
+                view = inflater.inflate(R.layout.twitter_row, null);
+
+            String twitterProfPicURL = twits.get(position).getUser().getProfileImageUrl().replace("_normal", "");
+            String twitterName = twits.get(position).getUser().getName();
+            String tweet = twits.get(position).getText();
+
+            LinearLayout retweetLayout = (LinearLayout) view.findViewById(R.id.retweeted_layout);
+            TextView twitterNameTv = (TextView) view.findViewById(R.id.twitter_name);
+            TextView tweetTv = (TextView) view.findViewById(R.id.tweet);
+            final ImageView profPic = (ImageView) view.findViewById(R.id.twitter_prof_pic);
+
+            /* Check if we're dealing with a retweet */
+            if (tweet.startsWith("RT")) {
+                retweetLayout.setVisibility(View.VISIBLE);
+                String retweetedAccountName = tweet.substring(tweet.indexOf("@") + 1, tweet.indexOf(":"));
+                twitterNameTv.setText(getString(R.string.preceding_at_sign, retweetedAccountName));
+                tweet = tweet.replace("RT " + getString(R.string.preceding_at_sign, retweetedAccountName) + ": ", "");
+                tweetTv.setText(tweet);
+                Request twitterUserRequest = new TwitterUserRequest(
+                        getString(R.string.twitter_user_url) + retweetedAccountName,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                TwitterUser user = new Gson().fromJson(response, TwitterUser.class);
+                                ImageLoader il = new ImageLoader(requestQueue, bitmapLruCache);
+                                il.get(user.getProfileImageUrl().replace("_normal", ""), new ProfPicImageListener(profPic));
+                            }
+                        },
+                        new GenericErrorListener());
+                requestQueue.add(twitterUserRequest);
+            } else {
+                retweetLayout.setVisibility(View.GONE);
+                twitterNameTv.setText(getString(R.string.preceding_at_sign, twitterName));
+                tweetTv.setText(tweet);
+                imageLoader.get(twitterProfPicURL, new ProfPicImageListener(profPic));
+            }
+
+            return view;
+        }
+
+        private class ProfPicImageListener implements ImageLoader.ImageListener {
+            ImageView profPicIv;
+
+            ProfPicImageListener(ImageView profPicIv) {
+                this.profPicIv = profPicIv;
+            }
+
+            @Override
+            public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+                if (response.getBitmap() != null) {
+                    Bitmap profPicBitmap = response.getBitmap();
+                    profPicBitmap = Bitmap.createScaledBitmap(profPicBitmap, 256, 256, false);
+                    profPicIv.setImageBitmap(profPicBitmap);
+                }
+            }
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+            }
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return position;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
     }
 }

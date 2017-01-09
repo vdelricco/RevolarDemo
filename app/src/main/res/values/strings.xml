@@ -4,17 +4,19 @@
     <string name="action_edit_contacts">Edit Contacts</string>
     <string name="action_view_twitter">View Revolar Twitter</string>
 
+    <string name="alert_sms_message">You have been contacted by Vince Delricco\'s Revolar demo application.
+    If you weren\'t expecting this message, too bad. You got it.</string>
     <string name="contact_limits">Please Choose 1 to 5 Contacts</string>
+    <string name="preceding_at_sign">\@%1$s</string>
     <string name="revolar">Revolar</string>
+    <string name="revolar_retweeted">Revolar Retweeted</string>
     <string name="save">Save</string>
     <string name="sending_sms_messages">Sending SMS messages to selected contacts</string>
 
-    <string name="alert_sms_message">You have been contacted by Vince Delricco\'s Revolar demo application.
-    If you weren\'t expecting this message, too bad. You got it.</string>
-
-    <!-- Twitter specific strings -->
+    <!-- Twitter API specific strings -->
+    <string name="twitter_auth_token_url">https://api.twitter.com/oauth2/token</string>
     <string name="twitter_consumer_key">aA23JBYz0xrKrWoYNLKd0oiKI</string>
     <string name="twitter_consumer_secret">cujxceo92OIoGQDRCVLXDJ9GXkG2c8XLxbwRZAvCxZBdCxed9u</string>
-    <string name="twitter_auth_token_url">https://api.twitter.com/oauth2/token</string>
     <string name="twitter_timeline_url">https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=</string>
+    <string name="twitter_user_url">https://api.twitter.com/1.1/users/show.json?screen_name=</string>
 </resources>

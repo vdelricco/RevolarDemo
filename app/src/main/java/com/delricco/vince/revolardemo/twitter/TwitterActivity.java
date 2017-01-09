@@ -1,11 +1,13 @@
 package com.delricco.vince.revolardemo.twitter;
 
-import android.app.ListActivity;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -36,7 +39,7 @@ import java.net.URLEncoder;
 /**
  * All Twitter code adapted from: https://github.com/Rockncoder/TwitterTutorial
  */
-public class TwitterActivity extends ListActivity {
+public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRefreshListener {
 
     final static String TAG = TwitterActivity.class.getSimpleName();
 
@@ -44,6 +47,7 @@ public class TwitterActivity extends ListActivity {
     private TwitterAdapter adapter;
     private RequestQueue requestQueue;
     private Authenticated authenticated;
+    private SwipeRefreshLayout swipeLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,8 +56,21 @@ public class TwitterActivity extends ListActivity {
         requestQueue = Volley.newRequestQueue(this);
         twits = new Twitter();
         adapter = new TwitterAdapter();
-        setListAdapter(adapter);
+        setContentView(R.layout.activity_twitter);
+        ListView twitterTimeline = (ListView) findViewById(R.id.twitter_timeline);
+        twitterTimeline.setAdapter(adapter);
+        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        swipeLayout.setOnRefreshListener(this);
+        swipeLayout.setColorSchemeColors(ContextCompat.getColor(this, R.color.colorAccent));
+        swipeLayout.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
         authenticated = null;
+        downloadTweets();
+    }
+
+    @Override
+    public void onRefresh() {
+        twits.clear();
+        adapter.notifyDataSetChanged();
         downloadTweets();
     }
 
@@ -95,29 +112,43 @@ public class TwitterActivity extends ListActivity {
         return auth;
     }
 
+    private boolean isAuthenticated(Authenticated auth) {
+        return (auth != null && auth.token_type.equals("bearer"));
+    }
+
     private void getAuthToken() {
-        /* Step 1: Encode consumer key and secret */
-        try {
-            /* URL encode the consumer key and secret */
-            String urlApiKey = URLEncoder.encode(getString(R.string.twitter_consumer_key), "UTF-8");
-            String urlApiSecret = URLEncoder.encode(getString(R.string.twitter_consumer_secret), "UTF-8");
-
-            /* Concatenate the encoded consumer key, a colon character, and the
-               encoded consumer secret */
-            final String combined = urlApiKey + ":" + urlApiSecret;
-
-            /* Base64 encode the string */
-            final String base64Encoded = Base64.encodeToString(combined.getBytes(), Base64.NO_WRAP);
-
-            /* Request token with the base64 encoded key & secret */
-            Request authTokenRequest = new AuthTokenRequest(
-                    getString(R.string.twitter_auth_token_url),
-                    new AuthResponseListener(),
+        if (isAuthenticated(authenticated)) {
+            /* If we're already authenticated, just request the twitter timeline */
+            Request twitterTimelineRequest = new TwitterTimelineRequest(
+                    getString(R.string.twitter_timeline_url) + getString(R.string.revolar),
+                    new TwitterTimelineResponseListener(),
                     new GenericErrorListener(),
-                    base64Encoded);
-            requestQueue.add(authTokenRequest);
-        } catch (UnsupportedEncodingException ex) {
-            ex.printStackTrace();
+                    authenticated);
+            requestQueue.add(twitterTimelineRequest);
+        } else {
+        /* Step 1: Encode consumer key and secret */
+            try {
+                /* URL encode the consumer key and secret */
+                String urlApiKey = URLEncoder.encode(getString(R.string.twitter_consumer_key), "UTF-8");
+                String urlApiSecret = URLEncoder.encode(getString(R.string.twitter_consumer_secret), "UTF-8");
+
+                /* Concatenate the encoded consumer key, a colon character, and the
+                   encoded consumer secret */
+                final String combined = urlApiKey + ":" + urlApiSecret;
+
+                /* Base64 encode the string */
+                final String base64Encoded = Base64.encodeToString(combined.getBytes(), Base64.NO_WRAP);
+
+                /* Request token with the base64 encoded key & secret */
+                Request authTokenRequest = new AuthTokenRequest(
+                        getString(R.string.twitter_auth_token_url),
+                        new AuthResponseListener(),
+                        new GenericErrorListener(),
+                        base64Encoded);
+                requestQueue.add(authTokenRequest);
+            } catch (UnsupportedEncodingException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -127,6 +158,9 @@ public class TwitterActivity extends ListActivity {
             twits.clear();
             twits.addAll(jsonToTwitter(response));
             adapter.notifyDataSetChanged();
+            if (swipeLayout.isRefreshing()) {
+                swipeLayout.setRefreshing(false);
+            }
         }
     }
 
@@ -136,14 +170,13 @@ public class TwitterActivity extends ListActivity {
             final Authenticated auth = jsonToAuthenticated(response);
             /* Applications should verify that the value associated with the
                token_type key of the returned object is bearer */
-            if (auth != null && auth.token_type.equals("bearer")) {
+            if (isAuthenticated(auth)) {
                 authenticated = auth;
                 Request twitterTimelineRequest = new TwitterTimelineRequest(
                         getString(R.string.twitter_timeline_url) + getString(R.string.revolar),
                         new TwitterTimelineResponseListener(),
                         new GenericErrorListener(),
-                        auth
-                );
+                        auth);
                 requestQueue.add(twitterTimelineRequest);
             }
         }
@@ -179,6 +212,7 @@ public class TwitterActivity extends ListActivity {
             if (convertView == null)
                 view = inflater.inflate(R.layout.twitter_row, null);
 
+            /* Remove the "_normal" from the URL to get a full size picture. We will shrink it */
             String twitterProfPicURL = twits.get(position).getUser().getProfileImageUrl().replace("_normal", "");
             String twitterName = twits.get(position).getUser().getName();
             String tweet = twits.get(position).getText();

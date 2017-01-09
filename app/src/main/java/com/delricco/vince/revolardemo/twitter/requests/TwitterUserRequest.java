@@ -13,10 +13,9 @@ public class TwitterUserRequest extends StringRequest {
     private Authenticated authenticated;
 
     public TwitterUserRequest(String url,
-                               Response.Listener<String> listener,
-                               Response.ErrorListener errorListener,
-                               Authenticated authenticated)
-    {
+                              Response.Listener<String> listener,
+                              Response.ErrorListener errorListener,
+                              Authenticated authenticated) {
         super(Request.Method.GET, url, listener, errorListener);
         this.authenticated = authenticated;
     }

@@ -12,10 +12,9 @@ public class AuthTokenRequest extends StringRequest {
     private String encodedKeyAndSecret;
 
     public AuthTokenRequest(String url,
-                             Response.Listener<String> listener,
-                             Response.ErrorListener errorListener,
-                             String encodedKeyAndSecret)
-    {
+                            Response.Listener<String> listener,
+                            Response.ErrorListener errorListener,
+                            String encodedKeyAndSecret) {
         super(Request.Method.POST, url, listener, errorListener);
         this.encodedKeyAndSecret = encodedKeyAndSecret;
     }

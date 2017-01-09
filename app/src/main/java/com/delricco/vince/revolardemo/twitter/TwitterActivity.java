@@ -151,7 +151,9 @@ public class TwitterActivity extends ListActivity {
 
     private class GenericErrorListener implements Response.ErrorListener {
         @Override
-        public void onErrorResponse(VolleyError error) { Log.e(TAG, error.toString()); }
+        public void onErrorResponse(VolleyError error) {
+            Log.e(TAG, error.toString());
+        }
     }
 
     class TwitterAdapter extends BaseAdapter {
@@ -216,6 +218,16 @@ public class TwitterActivity extends ListActivity {
             return view;
         }
 
+        @Override
+        public Object getItem(int position) {
+            return position;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
         private class ProfPicImageListener implements ImageLoader.ImageListener {
             ImageView profPicIv;
 
@@ -236,16 +248,6 @@ public class TwitterActivity extends ListActivity {
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.d(TAG, "Error: " + error.getMessage());
             }
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return position;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
         }
     }
 }

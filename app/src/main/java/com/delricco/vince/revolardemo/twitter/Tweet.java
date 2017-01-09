@@ -29,60 +29,60 @@ class Tweet {
         return DateCreated;
     }
 
-    public String getId() {
-        return Id;
-    }
-
-    public String getInReplyToScreenName() {
-        return InReplyToScreenName;
-    }
-
-    public String getInReplyToStatusId() {
-        return InReplyToStatusId;
-    }
-
-    public String getInReplyToUserId() {
-        return InReplyToUserId;
-    }
-
-    public String getText() {
-        return Text;
-    }
-
     public void setDateCreated(String dateCreated) {
         DateCreated = dateCreated;
+    }
+
+    public String getId() {
+        return Id;
     }
 
     public void setId(String id) {
         Id = id;
     }
 
+    public String getInReplyToScreenName() {
+        return InReplyToScreenName;
+    }
+
     public void setInReplyToScreenName(String inReplyToScreenName) {
         InReplyToScreenName = inReplyToScreenName;
+    }
+
+    public String getInReplyToStatusId() {
+        return InReplyToStatusId;
     }
 
     public void setInReplyToStatusId(String inReplyToStatusId) {
         InReplyToStatusId = inReplyToStatusId;
     }
 
+    public String getInReplyToUserId() {
+        return InReplyToUserId;
+    }
+
     public void setInReplyToUserId(String inReplyToUserId) {
         InReplyToUserId = inReplyToUserId;
+    }
+
+    public String getText() {
+        return Text;
     }
 
     public void setText(String text) {
         Text = text;
     }
 
-    public void setUser(TwitterUser user) {
-        User = user;
-    }
-
     public TwitterUser getUser() {
         return User;
     }
 
+    public void setUser(TwitterUser user) {
+        User = user;
+    }
+
     @Override
-    public String  toString(){
+    public String toString() {
         return getText();
     }
 }

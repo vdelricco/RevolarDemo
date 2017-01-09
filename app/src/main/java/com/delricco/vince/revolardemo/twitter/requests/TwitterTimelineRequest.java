@@ -12,9 +12,9 @@ public class TwitterTimelineRequest extends StringRequest {
     private Authenticated auth;
 
     public TwitterTimelineRequest(String url,
-                                   Response.Listener<String> listener,
-                                   Response.ErrorListener errorListener,
-                                   Authenticated auth) {
+                                  Response.Listener<String> listener,
+                                  Response.ErrorListener errorListener,
+                                  Authenticated auth) {
         super(Method.GET, url, listener, errorListener);
         this.auth = auth;
     }

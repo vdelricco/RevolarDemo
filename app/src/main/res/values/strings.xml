@@ -7,6 +7,7 @@
     <string name="alert_sms_message">You have been contacted by Vince Delricco\'s Revolar demo application.
     If you weren\'t expecting this message, too bad. You got it.</string>
     <string name="contact_limits">Please Choose 1 to 5 Contacts</string>
+    <string name="no_contacts">You don\'t have any contacts!</string>
     <string name="preceding_at_sign">\@%1$s</string>
     <string name="revolar">Revolar</string>
     <string name="revolar_retweeted">Revolar Retweeted</string>

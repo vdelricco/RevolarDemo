@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.delricco.vince.revolardemo.contacts.EditContactsActivity;
 import com.delricco.vince.revolardemo.contacts.RevolarContact;
@@ -24,7 +25,7 @@ import com.delricco.vince.revolardemo.util.AppPreferences;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        ImageView imageView = (ImageView)findViewById(R.id.revolar_main_logo);
+        final ImageView imageView = (ImageView) findViewById(R.id.revolar_main_logo);
         /* Let the click listener handle sending SMS messages. Touch listener will
            handle imageview filter when the revolar image is touched */
         imageView.setOnClickListener(this);
@@ -53,18 +54,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN: {
-                        ImageView view = (ImageView) v;
                         //overlay is black with transparency of 0x77 (119)
-                        view.getDrawable().setColorFilter(0x77000000, PorterDuff.Mode.SRC_ATOP);
-                        view.invalidate();
+                        imageView.getDrawable().setColorFilter(0x77000000, PorterDuff.Mode.SRC_ATOP);
+                        imageView.invalidate();
                         break;
                     }
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL: {
-                        ImageView view = (ImageView) v;
                         //clear the overlay
-                        view.getDrawable().clearColorFilter();
-                        view.invalidate();
+                        imageView.getDrawable().clearColorFilter();
+                        imageView.invalidate();
                         break;
                     }
                 }
@@ -88,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
            as you specify a parent activity in AndroidManifest.xml */
         int id = item.getItemId();
 
-        switch(id) {
+        switch (id) {
             case R.id.action_edit_contacts:
                 int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
                 if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
@@ -115,13 +114,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startActivity(new Intent(this, EditContactsActivity.class));
                 }
-                return;
+                break;
             }
 
             case PERMISSIONS_REQUEST_SEND_SMS: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     sendSelectedContactsSMS();
                 }
+                break;
             }
         }
     }
@@ -157,20 +157,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void sendSelectedContactsSMS() {
         Log.v(TAG, getString(R.string.sending_sms_messages));
         SmsManager smsManager = SmsManager.getDefault();
-        ArrayList<RevolarContact> savedContacts = preferences.getContacts();
+        List<RevolarContact> savedContacts = preferences.getContacts();
 
-        for (int i = 0; i < savedContacts.size(); i++) {
-            try {
-                smsManager.sendTextMessage(savedContacts.get(i).getNumber(), null, getString(R.string.alert_sms_message), null, null);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+        if (!savedContacts.isEmpty()) {
+            for (int i = 0; i < savedContacts.size(); i++) {
+                try {
+                    smsManager.sendTextMessage(savedContacts.get(i).getNumber(), null, getString(R.string.alert_sms_message), null, null);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
+        } else {
+            Toast.makeText(this, getString(R.string.no_contacts), Toast.LENGTH_LONG).show();
         }
     }
 
     /* Debug method */
     public void printSavedContacts() {
-        ArrayList<RevolarContact> contacts = preferences.getContacts();
+        List<RevolarContact> contacts = preferences.getContacts();
         Log.v(TAG, "Contacts size is " + contacts.size());
         for (int i = 0; i < contacts.size(); i++) {
             Log.v(TAG, "Contact #" + i);

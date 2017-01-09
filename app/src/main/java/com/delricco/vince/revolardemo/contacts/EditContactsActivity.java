@@ -28,6 +28,7 @@ import com.delricco.vince.revolardemo.util.AppPreferences;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * This class uses some code from this post:
@@ -38,12 +39,12 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
 
     private static final String TAG = EditContactsActivity.class.getSimpleName();
 
-    ArrayList<RevolarContact> userContactList = new ArrayList<>();
-    ArrayList<RevolarContact> selectedContacts = new ArrayList<>();
-    ArrayList<RevolarContact> currentSavedContacts;
-    UserContactAdapter userContactAdapter ;
-    Button saveButton;
-    AppPreferences preferences;
+    private List<RevolarContact> userContactList = new ArrayList<>();
+    private List<RevolarContact> selectedContacts = new ArrayList<>();
+    private List<RevolarContact> currentSavedContacts;
+    private UserContactAdapter userContactAdapter;
+    private Button saveButton;
+    private AppPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,14 +89,12 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
                 return false;
             }
         });
-        saveButton.setOnClickListener(new View.OnClickListener()
-        {
+        saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 EditContactsActivity.this.selectedContacts = new ArrayList<>();
 
-                for (int i = 0; i < userContactList.size(); i++)
-                {
+                for (int i = 0; i < userContactList.size(); i++) {
                     if (userContactAdapter.checkStates.get(i)) {
                         selectedContacts.add(userContactList.get(i));
                     }
@@ -125,9 +124,8 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
 
     public void getAllContacts(ContentResolver cr) {
         Cursor phones = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-        while (phones.moveToNext())
-        {
-            String name=phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+        while (phones.moveToNext()) {
+            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
             String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
             userContactList.add(new RevolarContact(name, phoneNumber));
         }
@@ -142,7 +140,7 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
         phones.close();
     }
 
-    class UserContactAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener {
+    private class UserContactAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener {
 
         private SparseBooleanArray checkStates;
         private LayoutInflater inflater;
@@ -232,7 +230,7 @@ public class EditContactsActivity extends Activity implements AdapterView.OnItem
         private boolean contactAlreadySelected(String name, String number) {
             for (int i = 0; i < currentSavedContacts.size(); i++) {
                 if (currentSavedContacts.get(i).getName().equals(name) &&
-                    currentSavedContacts.get(i).getNumber().equals(number)) {
+                        currentSavedContacts.get(i).getNumber().equals(number)) {
                     return true;
                 }
             }

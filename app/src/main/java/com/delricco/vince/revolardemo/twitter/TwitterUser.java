@@ -18,12 +18,12 @@ class TwitterUser {
         return profileImageUrl;
     }
 
-    public String getScreenName() {
-        return screenName;
-    }
-
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getScreenName() {
+        return screenName;
     }
 
     public void setScreenName(String screenName) {

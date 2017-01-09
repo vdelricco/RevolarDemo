@@ -16,23 +16,22 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.delricco.vince.revolardemo.R;
+import com.delricco.vince.revolardemo.twitter.requests.AuthTokenRequest;
+import com.delricco.vince.revolardemo.twitter.requests.TwitterTimelineRequest;
+import com.delricco.vince.revolardemo.twitter.requests.TwitterUserRequest;
 import com.delricco.vince.revolardemo.util.BitmapLruCache;
 import com.google.gson.Gson;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * All Twitter code adapted from: https://github.com/Rockncoder/TwitterTutorial
@@ -121,70 +120,6 @@ public class TwitterActivity extends ListActivity {
             ex.printStackTrace();
         }
     }
-    private class TwitterUserRequest extends StringRequest {
-
-        private TwitterUserRequest(String url,
-                                   Response.Listener<String> listener,
-                                   Response.ErrorListener errorListener)
-        {
-            super(Request.Method.GET, url, listener, errorListener);
-        }
-
-        @Override
-        public Map<String, String> getHeaders() throws AuthFailureError {
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Authorization", "Bearer " + authenticated.access_token);
-            headers.put("Content-Type", "application/json");
-            return headers;
-        }
-    }
-
-    private class AuthTokenRequest extends StringRequest {
-        private String encodedKeyAndSecret;
-
-        private AuthTokenRequest(String url,
-                                 Response.Listener<String> listener,
-                                 Response.ErrorListener errorListener,
-                                 String encodedKeyAndSecret)
-        {
-            super(Request.Method.POST, url, listener, errorListener);
-            this.encodedKeyAndSecret = encodedKeyAndSecret;
-        }
-
-        @Override
-        public Map<String, String> getHeaders() throws AuthFailureError {
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Content-Length", String.valueOf(getBody().length));
-            headers.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-            headers.put("Authorization", "Basic " + encodedKeyAndSecret);
-            return headers;
-        }
-
-        @Override
-        public byte[] getBody() {
-            return ("grant_type=client_credentials").getBytes();
-        }
-    }
-
-    private class TwitterTimelineRequest extends StringRequest {
-        private Authenticated auth;
-
-        private TwitterTimelineRequest(String url,
-                                       Response.Listener<String> listener,
-                                       Response.ErrorListener errorListener,
-                                       Authenticated auth) {
-            super(Method.GET, url, listener, errorListener);
-            this.auth = auth;
-        }
-
-        @Override
-        public Map<String, String> getHeaders() throws AuthFailureError {
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Authorization", "Bearer " + auth.access_token);
-            headers.put("Content-Type", "application/json");
-            return headers;
-        }
-    }
 
     private class TwitterTimelineResponseListener implements Response.Listener<String> {
         @Override
@@ -268,7 +203,8 @@ public class TwitterActivity extends ListActivity {
                                 il.get(user.getProfileImageUrl().replace("_normal", ""), new ProfPicImageListener(profPic));
                             }
                         },
-                        new GenericErrorListener());
+                        new GenericErrorListener(),
+                        authenticated);
                 requestQueue.add(twitterUserRequest);
             } else {
                 retweetLayout.setVisibility(View.GONE);

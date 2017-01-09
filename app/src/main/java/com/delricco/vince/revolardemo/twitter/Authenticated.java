@@ -1,6 +1,6 @@
 package com.delricco.vince.revolardemo.twitter;
 
-class Authenticated {
-    String token_type;
-    String access_token;
+public class Authenticated {
+    public String token_type;
+    public String access_token;
 }

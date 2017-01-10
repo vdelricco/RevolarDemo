@@ -79,7 +79,17 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
         if (networkInfo != null && networkInfo.isConnected()) {
             /* Begins the process of grabbing Twitter timeline. Next steps are handled
                by Volley response listeners */
-            getAuthToken();
+            if (isAuthenticated(authenticated)) {
+                /* If we're already authenticated, just request the twitter timeline */
+                Request twitterTimelineRequest = new TwitterTimelineRequest(
+                        getString(R.string.twitter_timeline_url) + getString(R.string.revolar),
+                        new TwitterTimelineResponseListener(),
+                        new GenericErrorListener(),
+                        authenticated);
+                requestQueue.add(twitterTimelineRequest);
+            } else {
+                getAuthToken();
+            }
         } else {
             Log.v(TAG, "No network connection available.");
         }
@@ -112,38 +122,28 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
     }
 
     private void getAuthToken() {
-        if (isAuthenticated(authenticated)) {
-            /* If we're already authenticated, just request the twitter timeline */
-            Request twitterTimelineRequest = new TwitterTimelineRequest(
-                    getString(R.string.twitter_timeline_url) + getString(R.string.revolar),
-                    new TwitterTimelineResponseListener(),
+    /* Step 1: Encode consumer key and secret */
+        try {
+            /* URL encode the consumer key and secret */
+            String urlApiKey = URLEncoder.encode(getString(R.string.twitter_consumer_key), "UTF-8");
+            String urlApiSecret = URLEncoder.encode(getString(R.string.twitter_consumer_secret), "UTF-8");
+
+            /* Concatenate the encoded consumer key, a colon character, and the
+               encoded consumer secret */
+            final String combined = urlApiKey + ":" + urlApiSecret;
+
+            /* Base64 encode the string */
+            final String base64Encoded = Base64.encodeToString(combined.getBytes(), Base64.NO_WRAP);
+
+            /* Request token with the base64 encoded key & secret */
+            Request authTokenRequest = new AuthTokenRequest(
+                    getString(R.string.twitter_auth_token_url),
+                    new AuthResponseListener(),
                     new GenericErrorListener(),
-                    authenticated);
-            requestQueue.add(twitterTimelineRequest);
-        } else {
-        /* Step 1: Encode consumer key and secret */
-            try {
-                /* URL encode the consumer key and secret */
-                String urlApiKey = URLEncoder.encode(getString(R.string.twitter_consumer_key), "UTF-8");
-                String urlApiSecret = URLEncoder.encode(getString(R.string.twitter_consumer_secret), "UTF-8");
-
-                /* Concatenate the encoded consumer key, a colon character, and the
-                   encoded consumer secret */
-                final String combined = urlApiKey + ":" + urlApiSecret;
-
-                /* Base64 encode the string */
-                final String base64Encoded = Base64.encodeToString(combined.getBytes(), Base64.NO_WRAP);
-
-                /* Request token with the base64 encoded key & secret */
-                Request authTokenRequest = new AuthTokenRequest(
-                        getString(R.string.twitter_auth_token_url),
-                        new AuthResponseListener(),
-                        new GenericErrorListener(),
-                        base64Encoded);
-                requestQueue.add(authTokenRequest);
-            } catch (UnsupportedEncodingException ex) {
-                ex.printStackTrace();
-            }
+                    base64Encoded);
+            requestQueue.add(authTokenRequest);
+        } catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
         }
     }
 

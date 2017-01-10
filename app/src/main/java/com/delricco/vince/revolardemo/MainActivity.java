@@ -22,6 +22,7 @@ import com.delricco.vince.revolardemo.contacts.EditContactsActivity;
 import com.delricco.vince.revolardemo.contacts.RevolarContact;
 import com.delricco.vince.revolardemo.twitter.TwitterActivity;
 import com.delricco.vince.revolardemo.util.AppPreferences;
+import com.thefinestartist.finestwebview.FinestWebView;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -98,6 +99,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.action_view_twitter:
                 startActivity(new Intent(this, TwitterActivity.class));
+                break;
+            case R.id.action_visit_website:
+                new FinestWebView.Builder(this).show(getString(R.string.revolar_website));
                 break;
             default:
                 break;

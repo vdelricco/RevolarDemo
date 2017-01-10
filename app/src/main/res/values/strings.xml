@@ -3,6 +3,7 @@
 
     <string name="action_edit_contacts">Edit Contacts</string>
     <string name="action_view_twitter">View Revolar Twitter</string>
+    <string name="action_visit_website">Visit Revolar Website</string>
 
     <string name="alert_sms_message">You have been contacted by Vince Delricco\'s Revolar demo application.
     If you weren\'t expecting this message, too bad. You got it.</string>
@@ -11,8 +12,10 @@
     <string name="preceding_at_sign">\@%1$s</string>
     <string name="revolar">Revolar</string>
     <string name="revolar_retweeted">Revolar Retweeted</string>
+    <string name="revolar_website">http://www.revolar.com</string>
     <string name="save">Save</string>
     <string name="sending_sms_messages">Sending SMS messages to selected contacts</string>
+    <string name="view_twitter">View Twitter</string>
 
     <!-- Twitter API specific strings -->
     <string name="twitter_auth_token_url">https://api.twitter.com/oauth2/token</string>

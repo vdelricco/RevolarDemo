@@ -63,7 +63,7 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
         swipeLayout.setOnRefreshListener(this);
         swipeLayout.setColorSchemeColors(ContextCompat.getColor(this, R.color.colorAccent));
         swipeLayout.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
-        authenticated = null;
+        authenticated = new Authenticated("","");
         downloadTweets();
     }
 
@@ -100,20 +100,18 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
         return twits;
     }
 
-    private Authenticated jsonToAuthenticated(String rawAuthorization) {
-        Authenticated auth = null;
+    private void jsonToAuthenticated(String rawAuthorization) {
         if (rawAuthorization != null && rawAuthorization.length() > 0) {
             try {
-                auth = new Gson().fromJson(rawAuthorization, Authenticated.class);
+                authenticated = new Gson().fromJson(rawAuthorization, Authenticated.class);
             } catch (IllegalStateException ex) {
                 ex.printStackTrace();
             }
         }
-        return auth;
     }
 
     private boolean isAuthenticated(Authenticated auth) {
-        return (auth != null && auth.getTokenType().equals("bearer"));
+        return (auth.getTokenType().equals("bearer"));
     }
 
     private void getAuthToken() {
@@ -167,16 +165,15 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
     private class AuthResponseListener implements Response.Listener<String> {
         @Override
         public void onResponse(String response) {
-            final Authenticated auth = jsonToAuthenticated(response);
+            jsonToAuthenticated(response);
             /* Applications should verify that the value associated with the
                token_type key of the returned object is bearer */
-            if (isAuthenticated(auth)) {
-                authenticated = auth;
+            if (isAuthenticated(authenticated)) {
                 Request twitterTimelineRequest = new TwitterTimelineRequest(
                         getString(R.string.twitter_timeline_url) + getString(R.string.revolar),
                         new TwitterTimelineResponseListener(),
                         new GenericErrorListener(),
-                        auth);
+                        authenticated);
                 requestQueue.add(twitterTimelineRequest);
             }
         }

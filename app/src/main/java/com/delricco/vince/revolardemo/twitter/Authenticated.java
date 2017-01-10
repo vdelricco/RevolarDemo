@@ -1,19 +1,20 @@
 package com.delricco.vince.revolardemo.twitter;
 
 public class Authenticated {
-    private String accessToken;
-    private String tokenType;
+
+    private String access_token;
+    private String token_type;
 
     public Authenticated(String token, String type) {
-        this.accessToken = token;
-        this.tokenType = type;
+        this.access_token = token;
+        this.token_type = type;
     }
 
     public String getAccessToken() {
-        return accessToken;
+        return access_token;
     }
 
     public String getTokenType() {
-        return tokenType;
+        return token_type;
     }
 }

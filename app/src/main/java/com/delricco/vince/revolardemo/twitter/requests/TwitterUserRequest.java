@@ -23,7 +23,7 @@ public class TwitterUserRequest extends StringRequest {
     @Override
     public Map<String, String> getHeaders() throws AuthFailureError {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Bearer " + authenticated.access_token);
+        headers.put("Authorization", "Bearer " + authenticated.getAccessToken());
         headers.put("Content-Type", "application/json");
         return headers;
     }

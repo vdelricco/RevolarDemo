@@ -22,7 +22,7 @@ public class TwitterTimelineRequest extends StringRequest {
     @Override
     public Map<String, String> getHeaders() throws AuthFailureError {
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Bearer " + auth.access_token);
+        headers.put("Authorization", "Bearer " + auth.getAccessToken());
         headers.put("Content-Type", "application/json");
         return headers;
     }

@@ -5,7 +5,7 @@ public class RevolarContact {
     private String name;
     private String number;
 
-    RevolarContact(String name, String number) {
+    public RevolarContact(String name, String number) {
         this.name = name;
         this.number = number;
     }

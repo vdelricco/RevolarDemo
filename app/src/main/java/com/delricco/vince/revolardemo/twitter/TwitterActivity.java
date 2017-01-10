@@ -113,7 +113,7 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
     }
 
     private boolean isAuthenticated(Authenticated auth) {
-        return (auth != null && auth.token_type.equals("bearer"));
+        return (auth != null && auth.getTokenType().equals("bearer"));
     }
 
     private void getAuthToken() {

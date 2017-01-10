@@ -18,6 +18,7 @@
     <string name="view_twitter">View Twitter</string>
 
     <!-- Twitter API specific strings -->
+    <string name="revolar_status_url">https://twitter.com/Revolar/status/</string>
     <string name="twitter_auth_token_url">https://api.twitter.com/oauth2/token</string>
     <string name="twitter_consumer_key">aA23JBYz0xrKrWoYNLKd0oiKI</string>
     <string name="twitter_consumer_secret">cujxceo92OIoGQDRCVLXDJ9GXkG2c8XLxbwRZAvCxZBdCxed9u</string>

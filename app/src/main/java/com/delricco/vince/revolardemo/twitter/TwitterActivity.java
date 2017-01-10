@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -29,6 +30,7 @@ import com.delricco.vince.revolardemo.twitter.requests.TwitterTimelineRequest;
 import com.delricco.vince.revolardemo.twitter.requests.TwitterUserRequest;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
+import com.thefinestartist.finestwebview.FinestWebView;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -55,6 +57,13 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
         adapter = new TwitterAdapter();
         setContentView(R.layout.activity_twitter);
         ListView twitterTimeline = (ListView) findViewById(R.id.twitter_timeline);
+        twitterTimeline.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String tweetUrl = getString(R.string.revolar_status_url) + twits.get(i).getId();
+                new FinestWebView.Builder(getApplicationContext()).show(tweetUrl);
+            }
+        });
         twitterTimeline.setAdapter(adapter);
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(this);
@@ -99,6 +108,7 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
         Twitter twits = null;
         if (result != null && result.length() > 0) {
             try {
+                Log.i(TAG, result);
                 twits = new Gson().fromJson(result, Twitter.class);
             } catch (IllegalStateException ex) {
                 ex.printStackTrace();

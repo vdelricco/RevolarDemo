@@ -2,7 +2,6 @@ package com.delricco.vince.revolardemo.twitter;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -23,15 +22,13 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 import com.delricco.vince.revolardemo.R;
 import com.delricco.vince.revolardemo.twitter.requests.AuthTokenRequest;
 import com.delricco.vince.revolardemo.twitter.requests.TwitterTimelineRequest;
 import com.delricco.vince.revolardemo.twitter.requests.TwitterUserRequest;
-import com.delricco.vince.revolardemo.util.BitmapLruCache;
 import com.google.gson.Gson;
+import com.squareup.picasso.Picasso;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -63,7 +60,7 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
         swipeLayout.setOnRefreshListener(this);
         swipeLayout.setColorSchemeColors(ContextCompat.getColor(this, R.color.colorAccent));
         swipeLayout.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
-        authenticated = new Authenticated("","");
+        authenticated = new Authenticated("", "");
         downloadTweets();
     }
 
@@ -187,13 +184,10 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
     }
 
     class TwitterAdapter extends BaseAdapter {
-        BitmapLruCache bitmapLruCache;
-
         private LayoutInflater inflater;
 
         TwitterAdapter() {
             inflater = (LayoutInflater) TwitterActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            bitmapLruCache = new BitmapLruCache();
         }
 
         @Override
@@ -204,7 +198,6 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
             View view = convertView;
-            ImageLoader imageLoader = new ImageLoader(requestQueue, bitmapLruCache);
 
             if (convertView == null)
                 view = inflater.inflate(R.layout.twitter_row, null);
@@ -232,8 +225,9 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
                             @Override
                             public void onResponse(String response) {
                                 TwitterUser user = new Gson().fromJson(response, TwitterUser.class);
-                                ImageLoader il = new ImageLoader(requestQueue, bitmapLruCache);
-                                il.get(user.getProfileImageUrl().replace("_normal", ""), new ProfPicImageListener(profPic));
+                                String profPicUrl = user.getProfileImageUrl().replace("_normal", "");
+                                Picasso.with(TwitterActivity.this.getApplicationContext())
+                                        .load(profPicUrl).into(profPic);
                             }
                         },
                         new GenericErrorListener(),
@@ -243,7 +237,8 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
                 retweetLayout.setVisibility(View.GONE);
                 twitterNameTv.setText(getString(R.string.preceding_at_sign, twitterName));
                 tweetTv.setText(tweet);
-                imageLoader.get(twitterProfPicURL, new ProfPicImageListener(profPic));
+                Picasso.with(TwitterActivity.this.getApplicationContext())
+                        .load(twitterProfPicURL).into(profPic);
             }
 
             return view;
@@ -259,26 +254,5 @@ public class TwitterActivity extends Activity implements SwipeRefreshLayout.OnRe
             return 0;
         }
 
-        private class ProfPicImageListener implements ImageLoader.ImageListener {
-            ImageView profPicIv;
-
-            ProfPicImageListener(ImageView profPicIv) {
-                this.profPicIv = profPicIv;
-            }
-
-            @Override
-            public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
-                if (response.getBitmap() != null) {
-                    Bitmap profPicBitmap = response.getBitmap();
-                    profPicBitmap = Bitmap.createScaledBitmap(profPicBitmap, 256, 256, false);
-                    profPicIv.setImageBitmap(profPicBitmap);
-                }
-            }
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                VolleyLog.d(TAG, "Error: " + error.getMessage());
-            }
-        }
     }
 }
